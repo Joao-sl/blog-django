@@ -3,6 +3,7 @@ from django.db import models
 from utils.rands import slugify_new
 from utils.images import resize_image
 from django_summernote.models import AbstractAttachment
+from django.urls import reverse
 
 # Create your models here.
 
@@ -70,6 +71,11 @@ class Page(models.Model):
         default=False, help_text='If is marked, the page will be public')
     content = models.TextField()
 
+    def get_absolute_url(self):
+        if not self.is_published:
+            return reverse('blog:index')
+        return reverse('blog:page', args={self.slug, })  # type: ignore
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify_new(self.title, 4)
@@ -119,6 +125,11 @@ class Post(models.Model):
         Category, on_delete=models.SET_NULL, null=True, blank=True, default=None)
 
     tags = models.ManyToManyField(Tag, blank=True, default='')
+
+    def get_absolute_url(self):
+        if not self.is_published:
+            return reverse('blog:index')
+        return reverse('blog:post', args={self.slug, })  # type: ignore
 
     def __str__(self):
         return self.title
